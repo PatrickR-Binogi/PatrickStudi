@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>Preloading videos and storing them  in IndexDb</title>
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+  
+      <link rel="stylesheet" href="css/style.css">
+
+  
+</head>
+
+<body>
+
+  <div style="float:left">       
+<video id="home_video1" class="video-js radium-player-skin" data-subtitles-enable="false" height="360" poster="https://video.studi.se/FYH199/FYH199_SE_sv.jpg" title="Home" width="640" controls
+ preload="auto"  data-setup="{}">
+                        
+        </video>
+</div>
+<div class="playlist">
+  <ul>
+    <li><button onClick="loadVideoFromUi('https://video.studi.se/FYH199/FYH199_SE_sv.mp4')">Video 1</button><span id="progress1"></span></li>
+    <li><button onClick="loadVideoFromUi('https://video.studi.se/FYH198/FYH198_SE_sv.mp4')">Video 2</button><span id="progress2"></span></li>
+    <li><button onClick="loadVideoFromUi('https://video.studi.se/FYH120/FYH120_SE_sv.mp4')">Video 3</button><span id="progress3"></span></li>
+    <li><button onClick="loadVideoFromUi('https://video.studi.se/FYH121/FYH121_SE_sv.mp4')">Video 4</button><span id="progress4"></span></li>
+  </ul>
+</div>
+  <script src='https://vjs.zencdn.net/4.4/video.js'></script>
+
+  
+
+    <script  src="js/index.js"></script>
+
+
+
+
+</body>
+
+</html>
