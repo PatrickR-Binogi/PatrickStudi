@@ -5,4 +5,4 @@ https://codepen.io/Fornax10/pen/PRYXVE.
 
 ## Thanks to 
 
-* Video.js https://codepen.io/Fornax10/pen/PRYXVE 
+* Video.js https://github.com/videojs
