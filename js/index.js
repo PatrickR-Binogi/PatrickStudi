@@ -1,6 +1,6 @@
 
 window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB,   
-    dbVersion = 1;    
+    dbVersion = 2;
 var db;
 
 var videoEl = document.getElementById('home_video1');
