@@ -90,17 +90,47 @@ function putVideoInDb (blob, videoKey){
 		// Open a transaction to the database
 		var transaction = db.transaction(["videoStore"], "readwrite");
 
-		// Put the blob into the dabase
-		var put = transaction.objectStore("videoStore").put(blob, videoKey);  
+		// var put = transaction.objectStore("videoStore").put(blob, videoKey);
+
+		blobToArrayBuffer(blob).then(function(result){
+		    console.log('success')
+            var transaction = db.transaction(["videoStore"], "readwrite");
+            transaction.objectStore("videoStore").put(result, 'ArrayBuffer' + videoKey);
+		});
 }
 
 function getVideoFromDbAndSetElementSource (videoKey, videoElement) {     
     var transaction = db.transaction(["videoStore"], "readonly");
-    transaction.objectStore("videoStore").get(videoKey).onsuccess = function (event) {
+
+    transaction.objectStore("videoStore").get('ArrayBuffer' + videoKey).onsuccess = function (event) {
+        var blobFile = arrayBufferToBlob(event.target.result,'video/mp4');
+        var URL = window.URL || window.webkitURL;
+        var vidSource = URL.createObjectURL(blobFile);
+        videoElement.src = vidSource;
+        videoElement.play(); // this will cuase dom exceptions if
+
+    /* transaction.objectStore("videoStore").get(videoKey).onsuccess = function (event) {
       var blobFile = event.target.result;            
       var URL = window.URL || window.webkitURL;
       var vidSource = URL.createObjectURL(blobFile);
       videoElement.src = vidSource;	      
-      videoElement.play(); // this will cuase dom exceptions if
+      videoElement.play(); // this will cuase dom exceptions if */
     }
 };
+
+// iOS Safari workaround
+// https://developers.google.com/web/fundamentals/instant-and-offline/web-storage/indexeddb-best-practices
+function blobToArrayBuffer (blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+    reader.addEventListener('loadend', (e) => {
+        resolve(reader.result);
+});
+    reader.addEventListener('error', reject);
+    reader.readAsArrayBuffer(blob);
+});
+}
+
+function arrayBufferToBlob (buffer, type) {
+    return new Blob([buffer], {type: type});
+}
