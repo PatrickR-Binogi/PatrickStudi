@@ -29,7 +29,11 @@ function openDb(callback) {
     function _createObjectStore(dataBase) { 
           // Create an objectStore
           console.log("Creating objectStore")
-          dataBase.deleteObjectStore("videoStore");
+        try {
+            dataBase.deleteObjectStore("videoStore");
+        } catch(err) {
+
+        }
           dataBase.createObjectStore("videoStore");
         };
 
