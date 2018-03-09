@@ -16,7 +16,6 @@ function loadVideoFromUi(url) {
   getVideoFromDbAndSetElementSource(url,videoEl);
 }
 
- 
 function openDb(callback) {
       // Create/open database
     var request = indexedDB.open("videoFiles", dbVersion);
@@ -44,7 +43,7 @@ function openDb(callback) {
 
 function downloadVideo (videoUrl, progressEl) {
   var transaction = db.transaction(["videoStore"], "readonly");
-  var dbReq = transaction.objectStore("videoStore").get(videoUrl);
+  var dbReq = transaction.objectStore("videoStore").get("ArrayBuffer" + videoUrl);
               
   dbReq.onsuccess = function (event) {    
     if (event.target.result) {      
@@ -61,12 +60,7 @@ function downloadVideo (videoUrl, progressEl) {
       // so we need to check the status code
       if (this.status === 200) {
         var videoBlob = this.response;
-        var vid = URL.createObjectURL(videoBlob); // IE10+
-        putVideoInDb(videoBlob,videoUrl);
-        // Video is now downloaded
-        // and we can set it as source on the video element
-        //videoEl.src = vid;            
-      } 
+        putVideoInDb(videoBlob,videoUrl);}
     } 
 
     req.onerror = function() {
@@ -91,49 +85,38 @@ function updateProgress (oEvent, progressEl) {
 // https://hacks.mozilla.org/2012/02/storing-images-and-files-in-indexeddb/
 function putVideoInDb (blob, videoKey){          
 		console.log("Putting videoblob in IndexedDB");
-
-		// Open a transaction to the database
 		var transaction = db.transaction(["videoStore"], "readwrite");
 
-		// var put = transaction.objectStore("videoStore").put(blob, videoKey);
+		// var put = transaction.objectStore("videoStore").put(blob, videoKey); // doesn't work on iOS
 
-		blobToArrayBuffer(blob).then(function(result){
-		    console.log('success')
+        // Using ArrayBuffer to support mobile iOS. Should capability check instead and use Blob object when possible.
+		blobToArrayBuffer(blob, function(result){
             var transaction = db.transaction(["videoStore"], "readwrite");
             transaction.objectStore("videoStore").put(result, 'ArrayBuffer' + videoKey);
 		});
 }
 
-function getVideoFromDbAndSetElementSource (videoKey, videoElement) {     
+function getVideoFromDbAndSetElementSource (videoKey, videoElement) {
     var transaction = db.transaction(["videoStore"], "readonly");
 
     transaction.objectStore("videoStore").get('ArrayBuffer' + videoKey).onsuccess = function (event) {
-        var blobFile = arrayBufferToBlob(event.target.result,'video/mp4');
+        var blobFile = arrayBufferToBlob(event.target.result, 'video/mp4'); // ArrayBuffers don't have a mimetype so we set it manually.
         var URL = window.URL || window.webkitURL;
-        var vidSource = URL.createObjectURL(blobFile);
-        videoElement.src = vidSource;
-        videoElement.play(); // this will cuase dom exceptions if
-
-    /* transaction.objectStore("videoStore").get(videoKey).onsuccess = function (event) {
-      var blobFile = event.target.result;            
-      var URL = window.URL || window.webkitURL;
-      var vidSource = URL.createObjectURL(blobFile);
-      videoElement.src = vidSource;	      
-      videoElement.play(); // this will cuase dom exceptions if */
-    }
-};
+        videoElement.src = URL.createObjectURL(blobFile);
+        setTimeout(function () {
+            videoElement.play();
+        }, 100);
+    };
+}
 
 // iOS Safari workaround
 // https://developers.google.com/web/fundamentals/instant-and-offline/web-storage/indexeddb-best-practices
-function blobToArrayBuffer (blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-    reader.addEventListener('loadend', (e) => {
-        resolve(reader.result);
-});
-    reader.addEventListener('error', reject);
+function blobToArrayBuffer (blob,callback) {
+    var reader = new FileReader();
+    reader.addEventListener('loadend', function (e) {
+        callback(reader.result);
+    });
     reader.readAsArrayBuffer(blob);
-});
 }
 
 function arrayBufferToBlob (buffer, type) {
